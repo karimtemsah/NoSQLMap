@@ -302,7 +302,7 @@ def getApps(webPort,victim,uri,https,verb,requestHeaders):
             bfInfo = raw_input("MongoDB < 2.4 detected.  Start brute forcing database info (y/n)? ")
 
             if bfInfo.lower == "y":
-                getDBInfo()
+                getDBInfo(requestHeaders)
 
 
         print "\n"
@@ -972,7 +972,7 @@ def buildUri(origUri, randValue):
     return uriArray[0]
 
 
-def getDBInfo():
+def getDBInfo(requestHeaders):
     curLen = 0
     nameLen = 0
     gotFullDb = False
