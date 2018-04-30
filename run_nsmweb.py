@@ -1,4 +1,5 @@
 import sys
+import getopt
 import ast
 import nsmweb
 
@@ -11,7 +12,6 @@ def check_args(args):
         args[4]: https (On for https, Off for http)
         args[5]: verbose (On or Off)
         args[6]: request_headers (dict), example: "{'referer':'http://example.com'}"
-        args[7]: post_data (dict)
     """
     if args[0].lower() not in ['get', 'post']:
         print("HTTP method should be GET or POST")
@@ -35,13 +35,46 @@ def check_args(args):
 
 
 if __name__ == "__main__":
-    args = sys.argv[1:]
+    opts, args = getopt.getopt(sys.argv[1:], "h", [
+        "post-params=",
+        "inject-size=",
+        "inject-option=",
+        "inject-parameters="
+        "timing-attack=",
+        "brute-force-attack=",
+        "save-to-file=",
+        "file-path=",
+        "get-db-users="
+    ])
+    data = {}
     if not check_args(args):
         sys.exit(-1)
+    for opt, arg in opts:
+        if opt == '--post-params':
+            data['post-params'] = ast.literal_eval(arg)
+        if opt == '--inject-size':
+            data['inject-size'] = arg
+        if opt == '--inject-parameters':
+            data['inject-parameters'] = arg
+        if opt == '--inject-option':
+            data['inject-option'] = arg
+        if opt == '--timing-attack':
+            data['timing-attack'] = arg
+        if opt == '--brute-force-attack':
+            data['brute-force-attack'] = arg
+        if opt == '--save-to-file':
+            data['save-to-file'] = arg
+        if opt == '--file-path':
+            data['file-path'] = arg
+        if opt == '--get-db-users':
+            data['get-db-users'] = arg
 
     if args[0].lower() == 'get':
-        nsmweb.getApps(args[1], args[2], args[3], args[4], args[5], args[6])
+        nsmweb.getApps(args[1], args[2], args[3], args[4], args[5], args[6], data)
     elif args[0].lower() == 'post':
-        nsmweb.postApps(args[2], args[1], args[3], args[4], args[5], args[7], args[6])
+        if 'post-params' not in data.keys():
+            print 'No post parameters provided'
+            sys.exit(-1)
+        nsmweb.postApps(args[2], args[1], args[3], args[4], args[5], data['post-params'], args[6], data)
 
 

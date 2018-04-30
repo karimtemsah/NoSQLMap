@@ -19,8 +19,8 @@ if version_info >= (2, 7, 9):
     ssl._create_default_https_context = ssl._create_unverified_context
 
 
-def getApps(webPort,victim,uri,https,verb,requestHeaders):
-    print(webPort,victim,uri,https,verb,requestHeaders)
+def getApps(webPort,victim,uri,https,verb,requestHeaders, data):
+    print(webPort,victim,uri,https,verb,requestHeaders, data)
     print "Web App Attacks (GET)"
     print "==============="
     paramName = []
@@ -81,26 +81,21 @@ def getApps(webPort,victim,uri,https,verb,requestHeaders):
         print "Looks like the server didn't respond.  Check your options."
 
     if appUp == True:
-
-        sizeSelect = True
-
-        while sizeSelect:
-            injectSize = raw_input("Baseline test-Enter random string size: ")
-            if injectSize.isdigit():
-                sizeSelect = False
-            else:
-                print "Invalid! The size should be an integer."
-
-        injectString = randInjString(int(injectSize))
+        injectSize = 4
+        if 'inject-size' in data.keys():
+            injectSize = data['inject-size']
+        inj_option = 1
+        if 'inject-option' in data.keys():
+            inj_option = data['inject-option']
+        injectString = randInjString(int(injectSize), inj_option)
         print "Using " + injectString + " for injection testing.\n"
 
         # Build a random string and insert; if the app handles input correctly, a random string and injected code should be treated the same.
         if "?" not in appURL:
             print "No URI parameters provided for GET request...Check your options.\n"
-            raw_input("Press enter to continue...")
             return()
 
-        randomUri = buildUri(appURL,injectString)
+        randomUri = buildUri(appURL,injectString, data)
         print "URI : " + randomUri
         req = urllib2.Request(randomUri, None, requestHeaders)
 
@@ -261,8 +256,9 @@ def getApps(webPort,victim,uri,https,verb,requestHeaders):
             checkResult(randLength,injLen,testNum,verb,None)
             testNum += 1
 
-
-        doTimeAttack = raw_input("Start timing based tests (y/n)? ")
+        doTimeAttack = 'n'
+        if 'timing-attack' in data.keys():
+            doTimeAttack = data['timing-attack']
 
         if doTimeAttack.lower() == "y":
             print "Starting Javascript string escape time based injection..."
@@ -300,10 +296,12 @@ def getApps(webPort,victim,uri,https,verb,requestHeaders):
                 intTbAttack = False
 
         if lt24 == True:
-            bfInfo = raw_input("MongoDB < 2.4 detected.  Start brute forcing database info (y/n)? ")
+            bfInfo = 'n'
+            if 'brute-force-attack' in data.keys():
+                bfInfo = data['brute-force-attack']
 
             if bfInfo.lower == "y":
-                getDBInfo(requestHeaders)
+                getDBInfo(requestHeaders, data)
 
 
         print "\n"
@@ -324,10 +322,14 @@ def getApps(webPort,victim,uri,https,verb,requestHeaders):
         else:
             print "Integer attack-Unsuccessful"
 
-        fileOut = raw_input("Save results to file (y/n)? ")
+        fileOut = 'n'
+        if 'save-to-file' in data.keys():
+            fileOut = data['save-to-file']
 
         if fileOut.lower() == "y":
-            savePath = raw_input("Enter output file name: ")
+            savePath = 'output.txt'
+            if 'file-path' in data.keys():
+                savePath = data['file-path']
             fo = open(savePath, "wb")
             fo.write ("Vulnerable URLs:\n")
             fo.write("\n".join(vulnAddrs))
@@ -350,7 +352,6 @@ def getApps(webPort,victim,uri,https,verb,requestHeaders):
             fo.write("\n")
             fo.close()
 
-    raw_input("Press enter to continue...")
     return()
 
 
@@ -363,7 +364,7 @@ def getResponseBodyHandlingErrors(req):
     return responseBody
 
 
-def postApps(victim,webPort,uri,https,verb,postData,requestHeaders):
+def postApps(victim,webPort,uri,https,verb,postData,requestHeaders, data):
     print "Web App Attacks (POST)"
     print "==============="
     paramName = []
@@ -431,23 +432,22 @@ def postApps(victim,webPort,uri,https,verb,postData,requestHeaders):
             menuItem += 1
 
         try:
-            injIndex = raw_input("Which parameter should we inject? ")
+            injIndex = 1
+            if 'inject-parameters' in data.keys():
+                injIndex = data['inject-parameters']
             injOpt = str(postData.keys()[int(injIndex)-1])
             print "Injecting the " + injOpt + " parameter..."
         except:
-            raw_input("Something went wrong.  Press enter to return to the main menu...")
             return
 
-        sizeSelect = True
+        injectSize = 4
+        if 'inject-size' in data.keys():
+            injectSize = data['inject-size']
 
-        while sizeSelect:
-            injectSize = raw_input("Baseline test-Enter random string size: ")
-            if injectSize.isdigit():
-                sizeSelect = False
-            else:
-                print "Invalid! The size should be an integer."
-                
-        injectString = randInjString(int(injectSize))
+        inj_option = 1
+        if 'inject-option' in data.keys():
+            inj_option = data['inject-option']
+        injectString = randInjString(int(injectSize), inj_option)
         print "Using " + injectString + " for injection testing.\n"
 
         # Build a random string and insert; if the app handles input correctly, a random string and injected code should be treated the same.
@@ -642,7 +642,9 @@ def postApps(victim,webPort,uri,https,verb,postData,requestHeaders):
             testNum += 1
         print "\n"
 
-        doTimeAttack = raw_input("Start timing based tests (y/n)? ")
+        doTimeAttack = 'n'
+        if 'timing-attack' in data.keys():
+            doTimeAttack = data['timing-attack']
 
         if doTimeAttack == "y" or doTimeAttack == "Y":
             print "Starting Javascript string escape time based injection..."
@@ -704,10 +706,14 @@ def postApps(victim,webPort,uri,https,verb,postData,requestHeaders):
         else:
             print "Integer attack-Unsuccessful"
 
-        fileOut = raw_input("Save results to file (y/n)? ")
+        fileOut = 'n'
+        if 'save-to-file' in data.keys():
+            fileOut = data['save-to-file']
 
         if fileOut.lower() == "y":
-            savePath = raw_input("Enter output file name: ")
+            savePath = 'output.txt'
+            if 'file-path' in data.keys():
+                savePath = data['file-path']
             fo = open(savePath, "wb")
             fo.write ("Vulnerable Requests:\n")
             fo.write("\n".join(vulnAddrs))
@@ -730,7 +736,6 @@ def postApps(victim,webPort,uri,https,verb,postData,requestHeaders):
             fo.write("\n")
             fo.close()
 
-    raw_input("Press enter to continue...")
     return()
 
 
@@ -840,38 +845,25 @@ def checkResult(baseSize,respSize,testNum,verb,postData):
         return
 
 
-def randInjString(size):
-    print "What format should the random string take?"
-    print "1-Alphanumeric"
-    print "2-Letters only"
-    print "3-Numbers only"
-    print "4-Email address"
-    format = True
+def randInjString(size, format):
+    if format == "1":
+        chars = string.ascii_letters + string.digits
+        return ''.join(random.choice(chars) for x in range(size))
 
-    while format:
-        format = raw_input("Select an option: ")
+    elif format == "2":
+        chars = string.ascii_letters
+        return ''.join(random.choice(chars) for x in range(size))
 
-        if format == "1":
-            chars = string.ascii_letters + string.digits
-            return ''.join(random.choice(chars) for x in range(size))
+    elif format == "3":
+        chars = string.digits
+        return ''.join(random.choice(chars) for x in range(size))
 
-        elif format == "2":
-            chars = string.ascii_letters
-            return ''.join(random.choice(chars) for x in range(size))
-
-        elif format == "3":
-            chars = string.digits
-            return ''.join(random.choice(chars) for x in range(size))
-
-        elif format == "4":
-            chars = string.ascii_letters + string.digits
-            return ''.join(random.choice(chars) for x in range(size)) + '@' + ''.join(random.choice(chars) for x in range(size)) + '.com'
-        else:
-            format = True
-            print "Invalid selection."
+    elif format == "4":
+        chars = string.ascii_letters + string.digits
+        return ''.join(random.choice(chars) for x in range(size)) + '@' + ''.join(random.choice(chars) for x in range(size)) + '.com'
 
 
-def buildUri(origUri, randValue):
+def buildUri(origUri, randValue, data):
     paramName = []
     paramValue = []
     global uriArray
@@ -884,7 +876,7 @@ def buildUri(origUri, randValue):
         params = split_uri[1].split("&")
 
     except:
-        raw_input("Not able to parse the URL and parameters.  Check options settings.  Press enter to return to main menu...")
+        print "Not able to parse the URL and parameters."
         return
 
     for item in params:
@@ -899,7 +891,9 @@ def buildUri(origUri, randValue):
         menuItem += 1
 
     try:
-        injIndex = raw_input("Enter parameters to inject in a comma separated list:  ")
+        injIndex = 1
+        if 'inject-parameters' in data.keys():
+            injIndex = data['inject-parameters']
 
         for params in injIndex.split(","):
             injOpt.append(paramName[int(params)-1])
@@ -910,7 +904,6 @@ def buildUri(origUri, randValue):
             print "Injecting the " + params + " parameter..."
 
     except Exception:
-        raw_input("Something went wrong.  Press enter to return to the main menu...")
         return
 
     x = 0
@@ -973,7 +966,7 @@ def buildUri(origUri, randValue):
     return uriArray[0]
 
 
-def getDBInfo(requestHeaders):
+def getDBInfo(requestHeaders, data):
     curLen = 0
     nameLen = 0
     gotFullDb = False
@@ -1036,8 +1029,9 @@ def getDBInfo(requestHeaders):
         else:
             charCounter += 1
     print "\n"
-
-    getUserInf = raw_input("Get database users and password hashes (y/n)? ")
+    getUserInf = 'n'
+    if 'get-db-users' in data.keys():
+        getUserInf = data['get-db-users']
 
     if getUserInf.lower() == "y":
         charCounter = 0
@@ -1187,7 +1181,8 @@ def getDBInfo(requestHeaders):
                 charCounterHash = 0
                 rightCharsHash = 0
                 pwdHash = ""
-    crackHash = raw_input("Crack recovered hashes (y/n)?:  ")
+    # TODO
+    crackHash = 'n'
 
     while crackHash.lower() == "y":
         menuItem = 1
@@ -1199,5 +1194,4 @@ def getDBInfo(requestHeaders):
         nsmmongo.passCrack(users[int(userIndex)-1],hashes[int(userIndex)-1])
 
         crackHash = raw_input("Crack another hash (y/n)?")
-    raw_input("Press enter to continue...")
     return
