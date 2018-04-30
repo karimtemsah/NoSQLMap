@@ -20,6 +20,7 @@ if version_info >= (2, 7, 9):
 
 
 def getApps(webPort,victim,uri,https,verb,requestHeaders):
+    print(webPort,victim,uri,https,verb,requestHeaders)
     print "Web App Attacks (GET)"
     print "==============="
     paramName = []
